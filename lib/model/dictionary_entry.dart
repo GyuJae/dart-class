@@ -8,12 +8,9 @@ class DictionaryEntry {
   })  : _term = term,
         _definition = definition;
 
-  factory DictionaryEntry.fromJson(Map<String, dynamic> json) {
-    return DictionaryEntry(
-      term: json['term'],
-      definition: json['definition'],
-    );
-  }
+  DictionaryEntry.fromJson(Map<String, dynamic> json)
+      : _term = json['term'],
+        _definition = json['definition'];
 
   String get term => _term;
   String get definition => _definition;
