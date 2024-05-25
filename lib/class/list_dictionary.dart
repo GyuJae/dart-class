@@ -87,6 +87,10 @@ class ListDictionary implements AbstractDictionary {
   @override
   void bulkDelete(List<String> terms) {
     for (final term in terms) {
+      _ensureWordExists(term);
+    }
+
+    for (final term in terms) {
       delete(term);
     }
   }

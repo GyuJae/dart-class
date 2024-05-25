@@ -71,9 +71,7 @@ class MapDictionary implements AbstractDictionary {
   void bulkAdd(List<Map<String, String>> words) {
     for (final word in words) {
       final entry = DictionaryEntry.fromJson(word);
-      if (exists(entry.term)) {
-        throw WordAlreadyExistsException(entry.term);
-      }
+      _ensureWordNotExists(entry.term);
     }
 
     for (final word in words) {
@@ -84,6 +82,10 @@ class MapDictionary implements AbstractDictionary {
 
   @override
   void bulkDelete(List<String> terms) {
+    for (final term in terms) {
+      _ensureWordExists(term);
+    }
+
     for (final term in terms) {
       delete(term);
     }

@@ -173,6 +173,19 @@ void main() {
             throwsA(isA<WordNotFoundException>()),
           );
         });
+
+        test(
+            "bulkDelete: 존재하지 않는 단어를 삭제 시 에러를 던짐. (존재하는 단어도 이미 존재하지 않는 단어가 리스트에 존재 시에 삭제가 되면 안됩니다.)",
+            () {
+          final dictionary = dictionaryFactory();
+          dictionary.add("김치", "대박이네~");
+
+          expect(
+            () => dictionary.bulkDelete(["김치", "아파트"]),
+            throwsA(isA<WordNotFoundException>()),
+          );
+          expect(dictionary.get("김치"), "대박이네~");
+        });
       },
     );
   }
