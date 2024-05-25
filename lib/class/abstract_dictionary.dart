@@ -3,7 +3,7 @@ abstract class AbstractDictionary {
   String get(String term);
   void delete(String term);
   void update(String term, String definition);
-  void showAll();
+  List<String> showAll();
   int count();
   void upsert(String term, String definition);
   bool exists(String term);
