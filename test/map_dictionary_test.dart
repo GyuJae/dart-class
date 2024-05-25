@@ -133,7 +133,9 @@ void main() {
         expect(dictionary.get("아파트"), "비싸네~");
       });
 
-      test("bulkAdd: 이미 존재하는 단어를 추가할 때 에러를 던짐. (존재하지 않는 단어도 추가가 되면 안됩니다.)", () {
+      test(
+          "bulkAdd: 이미 존재하는 단어를 추가할 때 에러를 던짐. (존재하지 않는 단어도 이미 존재하는 단어가 리스트에 존재 시에 추가가 되면 안됩니다.)",
+          () {
         final dictionary = MapDictionary();
         dictionary.add("김치", "대박이네~");
 

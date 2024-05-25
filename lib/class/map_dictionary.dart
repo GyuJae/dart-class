@@ -72,7 +72,7 @@ class MapDictionary implements AbstractDictionary {
     for (final word in words) {
       final entry = DictionaryEntry.fromJson(word);
       if (exists(entry.term)) {
-        throw WordAlreadyExistsException("${entry.term} 단어가 이미 존재합니다.");
+        throw WordAlreadyExistsException(entry.term);
       }
     }
 
