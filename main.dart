@@ -24,40 +24,53 @@ class MinesweeperGame {
     _initializeGame();
 
     while (true) {
-      _showBoard();
+      try {
+        _showBoard();
 
-      if (doesUserWinTheGame) {
-        print('지뢰를 모두 찾았습니다. GAME CLEAR!');
-        break;
-      }
-
-      if (doseUserLoseTheGame) {
-        print('지뢰를 밟았습니다. GAME OVER!');
-        break;
-      }
-
-      String cellInputCol = _getCellInputCol();
-      String userActionInput = _getUserActionInput();
-
-      int selectedCol = _covertColFrom(cellInputCol);
-      int selectedRow = _convertRowFrom(cellInputCol.substring(1));
-
-      if (doseUserChooseToPlantFlag(userActionInput)) {
-        board[selectedRow][selectedCol] = _flagCellSign;
-        _checkIfGameOver();
-      } else if (doseUserChooseToOpenCell(userActionInput)) {
-        if (_isLandMineCell(selectedRow, selectedCol)) {
-          board[selectedRow][selectedCol] = _landMineCellSign;
-          _changeGameStatusToLose();
-          continue;
-        } else {
-          _open(selectedRow, selectedCol);
-          _checkIfGameOver();
+        if (doesUserWinTheGame) {
+          print('지뢰를 모두 찾았습니다. GAME CLEAR!');
+          break;
         }
-      } else {
-        print('잘못된 번호를 선택하셨습니다.');
+
+        if (doseUserLoseTheGame) {
+          print('지뢰를 밟았습니다. GAME OVER!');
+          break;
+        }
+
+        String cellInputCol = _getCellInputCol();
+        String userActionInput = _getUserActionInput();
+
+        int selectedCol = _covertColFrom(cellInputCol);
+        int selectedRow = _convertRowFrom(cellInputCol.substring(1));
+
+        actionOnCell(userActionInput, selectedRow, selectedCol);
+      } catch (e) {
+        print(e);
       }
     }
+  }
+
+  static void actionOnCell(
+      String userActionInput, int selectedRow, int selectedCol) {
+    if (doseUserChooseToPlantFlag(userActionInput)) {
+      board[selectedRow][selectedCol] = _flagCellSign;
+      _checkIfGameOver();
+      return;
+    }
+
+    if (!doseUserChooseToOpenCell(userActionInput)) {
+      print('잘못된 번호를 선택하셨습니다.');
+      return;
+    }
+
+    if (_isLandMineCell(selectedRow, selectedCol)) {
+      board[selectedRow][selectedCol] = _landMineCellSign;
+      _changeGameStatusToLose();
+      return;
+    }
+
+    _open(selectedRow, selectedCol);
+    _checkIfGameOver();
   }
 
   static void _changeGameStatusToLose() {
@@ -98,7 +111,13 @@ class MinesweeperGame {
   }
 
   static int _covertColFrom(String col) {
-    return col.codeUnitAt(0) - 'a'.codeUnitAt(0);
+    final colPosition = col.codeUnitAt(0) - 'a'.codeUnitAt(0);
+
+    if (colPosition < 0 || colPosition >= _boardColSize) {
+      throw Exception('잘못된 입력입니다.');
+    }
+
+    return colPosition;
   }
 
   static void _showBoard() {
@@ -173,12 +192,7 @@ class MinesweeperGame {
   }
 
   static bool _checkIfAllCellOpened() {
-    for (int i = 0; i < _boardRowSize; i++) {
-      for (int j = 0; j < _boardColSize; j++) {
-        if (board[i][j] == _closedCellSign) return false;
-      }
-    }
-    return true;
+    return board.expand((row) => row).every((cell) => cell != _closedCellSign);
   }
 }
 
