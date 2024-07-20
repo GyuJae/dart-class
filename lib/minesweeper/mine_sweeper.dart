@@ -1,30 +1,26 @@
-import 'dart:math';
 import 'dart:io';
 
-import 'cell.dart';
+import 'package:dart_playground/minesweeper/board.dart';
 
 class MinesweeperGame {
   static int get _boardRowSize => 8;
   static int get _boardColSize => 10;
   static int get _landMineCount => 10;
 
-  static List<List<Cell>> board = List.generate(
-    _boardRowSize,
-    (_) => List.generate(
-      _boardColSize,
-      (_) => Cell.createClosed(),
-    ),
+  static Board board = Board.fromSize(
+    rowSize: _boardRowSize,
+    colSize: _boardColSize,
+    landMineCount: _landMineCount,
   );
 
   static int gameStatus = 0; // 0: 게임 중, 1: 승리, -1: 패배
 
-  static void main(List<String> args) {
+  void run() {
     _showStartGameComments();
-    _initializeGame();
 
     while (true) {
       try {
-        _showBoard();
+        board.showBoard();
 
         if (doesUserWinTheGame) {
           print('지뢰를 모두 찾았습니다. GAME CLEAR!');
@@ -52,8 +48,7 @@ class MinesweeperGame {
   static void actionOnCell(
       String userActionInput, int selectedRow, int selectedCol) {
     if (doseUserChooseToPlantFlag(userActionInput)) {
-      board[selectedRow][selectedCol] =
-          board[selectedRow][selectedCol].flagCell();
+      board.flag(selectedRow, selectedCol);
       _checkIfGameOver();
       return;
     }
@@ -63,9 +58,8 @@ class MinesweeperGame {
       return;
     }
 
-    if (_isLandMineCell(selectedRow, selectedCol)) {
-      board[selectedRow][selectedCol] =
-          board[selectedRow][selectedCol].turnToLandMineCell();
+    if (board.isLandMine(selectedRow, selectedCol)) {
+      board.turnToLandMineCell(selectedRow, selectedCol);
       _changeGameStatusToLose();
       return;
     }
@@ -78,14 +72,11 @@ class MinesweeperGame {
     gameStatus = -1;
   }
 
-  static bool _isLandMineCell(int selectedRow, int selectedCol) =>
-      board[selectedRow][selectedCol].isLandMine();
-
   static bool doseUserChooseToOpenCell(String userActionInput) =>
       userActionInput == '1';
 
   static void _checkIfGameOver() {
-    if (_checkIfAllCellOpened()) _changeGameStatusToWin();
+    if (board.checkIfAllCellOpened()) _changeGameStatusToWin();
   }
 
   static int _changeGameStatusToWin() => _changeGameStatusToWin();
@@ -121,63 +112,6 @@ class MinesweeperGame {
     return colPosition;
   }
 
-  static void _showBoard() {
-    print('   a b c d e f g h i j');
-    for (int row = 0; row < _boardRowSize; row++) {
-      stdout.write('${row + 1}  ');
-      for (int col = 0; col < _boardColSize; col++) {
-        stdout.write('${board[row][col].sign} ');
-      }
-      print('');
-    }
-  }
-
-  static void _initializeGame() {
-    Random random = Random();
-    for (int i = 0; i < _landMineCount; i++) {
-      int col = random.nextInt(_boardColSize);
-      int row = random.nextInt(_boardRowSize);
-      board[row][col] = board[row][col].updateLandMine();
-    }
-
-    for (int row = 0; row < _boardRowSize; row++) {
-      for (int col = 0; col < _boardColSize; col++) {
-        int count = 0;
-        if (!_isLandMineCell(row, col)) {
-          if (row - 1 >= 0 &&
-              col - 1 >= 0 &&
-              board[row - 1][col - 1].isLandMine()) {
-            count++;
-          }
-          if (row - 1 >= 0 && board[row - 1][col].isLandMine()) count++;
-          if (row - 1 >= 0 &&
-              col + 1 < _boardColSize &&
-              board[row - 1][col + 1].isLandMine()) {
-            count++;
-          }
-          if (col - 1 >= 0 && board[row][col - 1].isLandMine()) count++;
-          if (col + 1 < _boardColSize && board[row][col + 1].isLandMine()) {
-            count++;
-          }
-          if (row + 1 < _boardRowSize &&
-              col - 1 >= 0 &&
-              board[row + 1][col - 1].isLandMine()) {
-            count++;
-          }
-          if (row + 1 < _boardRowSize && board[row + 1][col].isLandMine()) {
-            count++;
-          }
-          if (row + 1 < _boardRowSize &&
-              col + 1 < _boardColSize &&
-              board[row + 1][col + 1].isLandMine()) {
-            count++;
-          }
-          board[row][col] = board[row][col].updateNearByLandMineCount(count);
-        }
-      }
-    }
-  }
-
   static void _showStartGameComments() {
     print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
     print('지뢰찾기 게임 시작!');
@@ -185,20 +119,24 @@ class MinesweeperGame {
   }
 
   static void _open(int row, int col) {
-    if (row < 0 || row >= _boardRowSize || col < 0 || col >= _boardColSize) {
+    if (row < 0 ||
+        row >= board.getRowSize() ||
+        col < 0 ||
+        col >= board.getColSize()) {
       return;
     }
 
-    if (!board[row][col].isClosed()) return;
+    if (!board.isClosed(row, col)) return;
 
-    if (_isLandMineCell(row, col)) return;
+    if (board.isLandMineCell(row, col)) return;
 
-    if (board[row][col].isNearByLandMine()) {
-      board[row][col] = board[row][col].turnToLandMineCountCell();
+    if (board.isNearByLandMine(row, col)) {
+      board.turnToLandMineCountCell(row, col);
       return;
     }
 
-    board[row][col] = board[row][col].openCell();
+    board.openCell(row, col);
+
     _open(row - 1, col - 1);
     _open(row - 1, col);
     _open(row - 1, col + 1);
@@ -207,9 +145,5 @@ class MinesweeperGame {
     _open(row + 1, col - 1);
     _open(row + 1, col);
     _open(row + 1, col + 1);
-  }
-
-  static bool _checkIfAllCellOpened() {
-    return board.expand((row) => row).every((cell) => !cell.isClosed());
   }
 }
