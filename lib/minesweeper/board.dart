@@ -1,48 +1,40 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:dart_playground/minesweeper/cell.dart';
+import 'package:dart_playground/minesweeper/game_level/game_level.dart';
 
 typedef CellBoard = List<List<Cell>>;
 
 class Board {
-  final int _rowSize;
-  final int _colSize;
-  final int _landMineCount;
+  final GameLevel _level;
   final CellBoard _cellBoard;
 
   Board({
-    required int rowSize,
-    required int colSize,
-    required int landMineCount,
+    required GameLevel level,
     required List<List<Cell>> cellBoard,
-  })  : _rowSize = rowSize,
-        _colSize = colSize,
-        _landMineCount = landMineCount,
+  })  : _level = level,
         _cellBoard = cellBoard;
 
-  factory Board.fromSize({
-    required int rowSize,
-    required int colSize,
-    required int landMineCount,
+  factory Board.fromLevel({
+    required GameLevel level,
   }) {
     CellBoard cellBoard = List.generate(
-      rowSize,
+      level.getRowSize(),
       (_) => List.generate(
-        colSize,
+        level.getColSize(),
         (_) => Cell.createClosed(),
       ),
     );
 
     Random random = Random();
-    for (int i = 0; i < landMineCount; i++) {
-      int row = random.nextInt(rowSize);
-      int col = random.nextInt(colSize);
+    for (int i = 0; i < level.getLandMineCount(); i++) {
+      int row = random.nextInt(level.getRowSize());
+      int col = random.nextInt(level.getColSize());
       cellBoard[row][col] = cellBoard[row][col].updateLandMine();
     }
 
-    for (int row = 0; row < rowSize; row++) {
-      for (int col = 0; col < colSize; col++) {
+    for (int row = 0; row < level.getRowSize(); row++) {
+      for (int col = 0; col < level.getColSize(); col++) {
         int count = 0;
         if (!cellBoard[row][col].isLandMine()) {
           if (row - 1 >= 0 &&
@@ -52,24 +44,26 @@ class Board {
           }
           if (row - 1 >= 0 && cellBoard[row - 1][col].isLandMine()) count++;
           if (row - 1 >= 0 &&
-              col + 1 < colSize &&
+              col + 1 < level.getColSize() &&
               cellBoard[row - 1][col + 1].isLandMine()) {
             count++;
           }
           if (col - 1 >= 0 && cellBoard[row][col - 1].isLandMine()) count++;
-          if (col + 1 < colSize && cellBoard[row][col + 1].isLandMine()) {
+          if (col + 1 < level.getColSize() &&
+              cellBoard[row][col + 1].isLandMine()) {
             count++;
           }
-          if (row + 1 < rowSize &&
+          if (row + 1 < level.getRowSize() &&
               col - 1 >= 0 &&
               cellBoard[row + 1][col - 1].isLandMine()) {
             count++;
           }
-          if (row + 1 < rowSize && cellBoard[row + 1][col].isLandMine()) {
+          if (row + 1 < level.getRowSize() &&
+              cellBoard[row + 1][col].isLandMine()) {
             count++;
           }
-          if (row + 1 < rowSize &&
-              col + 1 < colSize &&
+          if (row + 1 < level.getRowSize() &&
+              col + 1 < level.getColSize() &&
               cellBoard[row + 1][col + 1].isLandMine()) {
             count++;
           }
@@ -80,23 +74,21 @@ class Board {
     }
 
     return Board(
-      rowSize: rowSize,
-      colSize: colSize,
-      landMineCount: landMineCount,
+      level: level,
       cellBoard: cellBoard,
     );
   }
 
   int getRowSize() {
-    return _rowSize;
+    return _level.getRowSize();
   }
 
   int getColSize() {
-    return _colSize;
+    return _level.getColSize();
   }
 
   int getLandMineCount() {
-    return _landMineCount;
+    return _level.getLandMineCount();
   }
 
   Board flag(int row, int col) {
@@ -113,24 +105,13 @@ class Board {
     return _cellBoard[row][col].isLandMine();
   }
 
-  String _getSign(int row, int col) {
+  String getSign(int row, int col) {
     return _cellBoard[row][col].getSign();
   }
 
   Board updateLandMineCell(int row, int col) {
     _cellBoard[row][col] = _cellBoard[row][col].turnToLandMineCountCell();
     return this;
-  }
-
-  void showBoard() {
-    print('   a b c d e f g h i j');
-    for (int row = 0; row < _rowSize; row++) {
-      stdout.write('${row + 1}  ');
-      for (int col = 0; col < _colSize; col++) {
-        stdout.write('${_getSign(row, col)} ');
-      }
-      print('');
-    }
   }
 
   Board updateNearByLandMineCount(int row, int col, int count) {

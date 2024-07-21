@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:dart_playground/minesweeper/board.dart';
 import 'package:dart_playground/minesweeper/exceptions.dart';
 
 class ConsoleOutput {
@@ -29,5 +32,25 @@ class ConsoleOutput {
     print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
     print('지뢰찾기 게임 시작!');
     print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
+  }
+
+  void showBoard(Board board) {
+    print("    ${_generateAlphabets(board.getColSize())}");
+    for (int row = 0; row < board.getRowSize(); row++) {
+      stdout.write('${(row + 1).toString().padLeft(2)}  ');
+      for (int col = 0; col < board.getColSize(); col++) {
+        stdout.write('${board.getSign(row, col).toString().padRight(1)} ');
+      }
+      print('');
+    }
+  }
+
+  String _generateAlphabets(int col) {
+    var alphabets = '';
+    for (int i = 0; i < col; i++) {
+      alphabets += '${String.fromCharCode(i + 97)} ';
+    }
+
+    return alphabets;
   }
 }
