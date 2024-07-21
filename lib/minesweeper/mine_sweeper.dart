@@ -66,7 +66,7 @@ class MinesweeperGame {
       return;
     }
 
-    _open(selectedRow, selectedCol);
+    board.openCell(selectedRow, selectedCol);
     _checkIfGameOver();
   }
 
@@ -112,34 +112,5 @@ class MinesweeperGame {
     }
 
     return colPosition;
-  }
-
-  void _open(int row, int col) {
-    if (row < 0 ||
-        row >= board.getRowSize() ||
-        col < 0 ||
-        col >= board.getColSize()) {
-      return;
-    }
-
-    if (!board.isClosed(row, col)) return;
-
-    if (board.isLandMineCell(row, col)) return;
-
-    if (board.isNearByLandMine(row, col)) {
-      board.turnToLandMineCountCell(row, col);
-      return;
-    }
-
-    board.openCell(row, col);
-
-    _open(row - 1, col - 1);
-    _open(row - 1, col);
-    _open(row - 1, col + 1);
-    _open(row, col - 1);
-    _open(row, col + 1);
-    _open(row + 1, col - 1);
-    _open(row + 1, col);
-    _open(row + 1, col + 1);
   }
 }

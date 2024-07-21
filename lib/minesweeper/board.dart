@@ -157,7 +157,30 @@ class Board {
   }
 
   CellBoard openCell(int row, int col) {
+    if (row < 0 || row >= getRowSize() || col < 0 || col >= getColSize()) {
+      return _cellBoard;
+    }
+
+    if (!isClosed(row, col)) return _cellBoard;
+
+    if (isLandMineCell(row, col)) return _cellBoard;
+
+    if (isNearByLandMine(row, col)) {
+      turnToLandMineCountCell(row, col);
+      return _cellBoard;
+    }
+
     _cellBoard[row][col] = _cellBoard[row][col].openCell();
+
+    openCell(row - 1, col - 1);
+    openCell(row - 1, col);
+    openCell(row - 1, col + 1);
+    openCell(row, col - 1);
+    openCell(row, col + 1);
+    openCell(row + 1, col - 1);
+    openCell(row + 1, col);
+    openCell(row + 1, col + 1);
+
     return _cellBoard;
   }
 
