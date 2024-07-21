@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:dart_playground/minesweeper/board.dart';
+import 'package:dart_playground/minesweeper/console_input.dart';
 import 'package:dart_playground/minesweeper/console_output.dart';
 import 'package:dart_playground/minesweeper/exceptions.dart';
 
@@ -17,34 +16,41 @@ class MinesweeperGame {
   );
 
   final ConsoleOutput consoleOutput = ConsoleOutput();
+  final ConsoleInput consoleInput = ConsoleInput();
 
   void run() {
     consoleOutput.printStartGameComments();
 
     while (true) {
-      try {
-        board.showBoard();
+      board.showBoard();
 
-        if (doesUserWinTheGame) {
-          consoleOutput.printGameWinningComment();
-          break;
-        }
-
-        if (doseUserLoseTheGame) {
-          consoleOutput.printGameLosingComment();
-          break;
-        }
-
-        String cellInputCol = _getCellInputCol();
-        String userActionInput = _getUserActionInput();
-
-        int selectedCol = _covertColFrom(cellInputCol);
-        int selectedRow = _convertRowFrom(cellInputCol.substring(1));
-
-        actionOnCell(userActionInput, selectedRow, selectedCol);
-      } on AppException catch (e) {
-        consoleOutput.printAppExceptionMessage(e);
+      if (doesUserWinTheGame) {
+        consoleOutput.printGameWinningComment();
+        break;
       }
+
+      if (doseUserLoseTheGame) {
+        consoleOutput.printGameLosingComment();
+        break;
+      }
+
+      consoleOutput.printCommentForChooseCell();
+      final ConsoleInputCell consoleInputCell = consoleInput.readCell();
+
+      if (consoleInputCell.row < 0 || consoleInputCell.row >= _boardRowSize) {
+        consoleOutput.printAppExceptionMessage(AppException('잘못된 입력입니다.'));
+        continue;
+      }
+
+      if (consoleInputCell.col < 0 || consoleInputCell.col >= _boardColSize) {
+        consoleOutput.printAppExceptionMessage(AppException('잘못된 입력입니다.'));
+        continue;
+      }
+
+      consoleOutput.printCommentForUserAction();
+      String userActionInput = consoleInput.readUserAction();
+
+      actionOnCell(userActionInput, consoleInputCell.row, consoleInputCell.col);
     }
   }
 
@@ -86,31 +92,7 @@ class MinesweeperGame {
   static bool doseUserChooseToPlantFlag(String userActionInput) =>
       userActionInput == '2';
 
-  String _getCellInputCol() {
-    consoleOutput.printCommentForChooseCell();
-    return stdin.readLineSync()!;
-  }
-
-  String _getUserActionInput() {
-    consoleOutput.printCommentForUserAction();
-    return stdin.readLineSync()!;
-  }
-
   static bool get doseUserLoseTheGame => gameStatus == -1;
 
   static bool get doesUserWinTheGame => gameStatus == 1;
-
-  static int _convertRowFrom(String row) {
-    return int.parse(row) - 1;
-  }
-
-  static int _covertColFrom(String col) {
-    final colPosition = col.codeUnitAt(0) - 'a'.codeUnitAt(0);
-
-    if (colPosition < 0 || colPosition >= _boardColSize) {
-      throw AppException('잘못된 입력입니다.');
-    }
-
-    return colPosition;
-  }
 }
