@@ -16,8 +16,6 @@ class Cell {
         _nearbyLandMineCount = nearByLandMinCount,
         _isLandMine = isLandMine;
 
-  get sign => _sign;
-
   String getSign() {
     return _sign;
   }
